@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.app.cs.entity.Post;
 import com.app.cs.entity.User;
@@ -66,8 +67,9 @@ public class StaticDataStore {
 	}
 
 	public static void updateNewsFeed() {
+		
 		users.forEach(usr->{
-			List<Post> userPostList=newsFeedsList.stream().sorted().filter(
+			List<Post> userPostList=newsFeedsList.stream().sorted().limit(20).filter(
 					post-> usr.getFollowers().contains(post.getPostedBy())
 					|| usr.getUserName().equals(post.getPostedBy())
 					).map(post->post).collect(Collectors.toList());
