@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.ArrayList;
 import java.util.List;
+import static org.hamcrest.Matchers.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -22,6 +23,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.app.cs.entity.User;
 import com.app.cs.service.SocialMediaService;
+
 
 /**
  * @author Komal
@@ -69,6 +71,18 @@ public class HomeControllerTest {
 				.param("userName", "SmitaS").param("password", "Smita123"))
 				.andExpect(status().isOk())
 				.andExpect(forwardedUrl("dashboard"));
+		
+		this.mockMvc.perform(post("/verifyUser")
+				.param("userName", "ABC").param("password", "XYZ"))
+				.andExpect(status().isOk())
+				.andExpect(forwardedUrl("home"))
+				.andExpect(model().attribute("errorMsg", equalTo("User name or password is incorrect !!")));
+		
+		this.mockMvc.perform(post("/verifyUser")
+				.param("userName", "").param("password", ""))
+				.andExpect(status().isOk())
+				.andExpect(forwardedUrl("home"))
+				.andExpect(model().attribute("errorMsg", equalTo("Please enter username and password!!")));
 	}
 	
 	@Test
@@ -78,7 +92,7 @@ public class HomeControllerTest {
 		this.mockMvc.perform(post("/createPost")
 				.param(content, "Dummy Content"))
 				.andExpect(status().isOk());
-				//.andExpect(forwardedUrl("dashboard"));
+				//.andExpect(model().attribute("successMsg", equalTo("Post has been successfully created!")));
 	}
 	
 	@Test

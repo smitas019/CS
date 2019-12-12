@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.app.cs.entity.Post;
@@ -25,9 +26,13 @@ public class SocialMediaService {
 	 * @param password
 	 * @return
 	 */
+	
+	@Autowired
+	private DataStore dataStore;
+	
 	public User validateUser(String userName,String password) {
 		User user=new User(userName, password);
-		Set<User> usersList=StaticDataStore.getUsers();
+		Set<User> usersList=dataStore.getUsers();
 		User resp=usersList.stream().filter(usr -> usr.equals(user)).findAny()
 		.orElse(null);
 		return resp;
@@ -38,7 +43,7 @@ public class SocialMediaService {
 	 * @return
 	 */
 	public User getUser(String userName) {
-		return StaticDataStore.getUser(userName);
+		return dataStore.getUser(userName);
 		
 	}
 	
@@ -49,11 +54,10 @@ public class SocialMediaService {
 	 * @return
 	 */
 	public boolean createPost(String userId,Integer postId,String content) {
-		
 		Post post = new Post(postId, content, userId, new Date(System.currentTimeMillis()));
-		StaticDataStore.getNewsFeedsList().add(post);
-		StaticDataStore.updateNewsFeed();
-		return true;
+		dataStore.getNewsFeedsList().add(post);
+		boolean resp=dataStore.updateNewsFeed();
+		return resp;
 	}
 	
 	/**
@@ -62,10 +66,12 @@ public class SocialMediaService {
 	 * @return
 	 */
 	public boolean follow(String followerId,String foloweeId) {
-		User user=StaticDataStore.getUser(followerId);
-		user.getFollowers().add(foloweeId);
-		StaticDataStore.updateNewsFeed();
-		return true;
+		User user=dataStore.getUser(followerId);
+		if(user!=null) {
+			user.getFollowers().add(foloweeId);
+			return dataStore.updateNewsFeed();
+		}
+		return false;
 	}
 	
 	/**
@@ -74,10 +80,12 @@ public class SocialMediaService {
 	 * @return
 	 */
 	public boolean unfollow(String followerId,String foloweeId) {
-		User user=StaticDataStore.getUser(followerId);
-		user.getFollowers().remove(foloweeId);
-		StaticDataStore.updateNewsFeed();
-		return true;
+		User user=dataStore.getUser(followerId);
+		if(user!=null) {
+			user.getFollowers().remove(foloweeId);
+			return dataStore.updateNewsFeed();
+		}
+		return false;
 	}
 	/**
 	 * @param name
@@ -85,10 +93,10 @@ public class SocialMediaService {
 	 * @return
 	 */
 	public List<User> search(String name,String loginUser) {
-		List<User> userList=StaticDataStore.getUsers().stream().filter(usr -> usr.getFirstName().
+		List<User> userList=dataStore.getUsers().stream().filter(usr -> usr.getFirstName().
 				contains(name)).map(post->post).collect(Collectors.toList());
 		
-		User loginUserObj=StaticDataStore.getUser(loginUser);
+		User loginUserObj=dataStore.getUser(loginUser);
 		for(User usr: userList) {
 			if(loginUserObj.getFollowers().contains(usr.getUserName())) {
 					usr.setFollowed("yes");

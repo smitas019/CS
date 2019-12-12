@@ -70,12 +70,17 @@ public class HomeController {
 		String password= req.getParameter("password");
 		ModelAndView model = null;
 		req.getSession().setAttribute("userName",userName);
-		User resp=socialMediaService.validateUser(userName,password);
-		if(resp!=null) {
-			req.getRequestDispatcher("dashboard").forward(req, res);
-		}else {
+		if((userName==null || password==null) || userName=="" || password=="") {
 			model=new ModelAndView("home");
-			model.addObject("errorMsg", "User name or password is incorrect !!");
+			model.addObject("errorMsg", "Please enter username and password!!");
+		}else {
+			User resp=socialMediaService.validateUser(userName,password);
+			if(resp!=null) {
+				req.getRequestDispatcher("dashboard").forward(req, res);
+			}else {
+				model=new ModelAndView("home");
+				model.addObject("errorMsg", "User name or password is incorrect !!");
+			}
 		}
 		
 		return model;
